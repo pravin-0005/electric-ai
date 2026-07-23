@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+
+#virtualenvironment
+.venv/
+
+electric document/
+
+
+*.python-version
+config.local.toml
