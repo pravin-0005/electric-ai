@@ -1,16 +1,13 @@
 from fastapi import FastAPI
 
+from app.api.v1.health import router as health_router
+
 app = FastAPI(
     title="ElectricAI API",
-    description="Smart Electricity Monitoring & AI Prediction Backend",
     version="1.0.0",
 )
 
-
-@app.get("/")
-async def root():
-    return {
-        "status": "success",
-        "message": "ElectricAI Backend Running 🚀",
-        "version": "1.0.0",
-    }
+app.include_router(
+    health_router,
+    prefix="/api/v1",
+)
