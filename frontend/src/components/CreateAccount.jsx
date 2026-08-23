@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { Zap, Mail, Eye, EyeOff, User, Lock } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { auth } from '../firebase'
+import { syncUser } from '../api'
 
 export default function CreateAccount() {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,7 +26,7 @@ export default function CreateAccount() {
     }
   }
 
-  const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault()
     const newErrors = {}
 
@@ -39,10 +44,24 @@ export default function CreateAccount() {
       return
     }
 
-    console.log('Account created successfully!')
-    alert('Account created successfully! 🎉')
+    setLoading(true)
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      await updateProfile(userCredential.user, { displayName: fullName })
+      await syncUser()
+      navigate('/')
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        setErrors({ email: 'This email is already registered' })
+      } else if (error.code === 'auth/weak-password') {
+        setErrors({ password: 'Password should be at least 6 characters' })
+      } else {
+        setErrors({ email: 'Something went wrong. Please try again.' })
+      }
+    } finally {
+      setLoading(false)
+    }
   }
-
   return (
     <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4">
       <div className="max-w-[420px] w-full glass rounded-2xl p-8 animate-fade-in">

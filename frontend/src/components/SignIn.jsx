@@ -1,14 +1,19 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '../firebase'
 import { Link } from 'react-router-dom'
 import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function SignIn() {
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [errors, setErrors] = useState({})
 
-  const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault()
     const newErrors = {}
     if (!email.trim()) newErrors.email = 'This field is required'
@@ -17,7 +22,16 @@ export default function SignIn() {
       setErrors(newErrors)
       return
     }
-    console.log('Signed in!')
+
+    setLoading(true)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      navigate('/')
+    } catch (error) {
+      setErrors({ password: 'Invalid email or password' })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const clearError = (field) => {
